@@ -76,6 +76,16 @@ admin_password=your_admin_password
 USER_youruser=youruser
 PASSWORD_youruser=yourpassword
 ```
+For multiple users add the following in `config.py`
+
+    USER_CREDENTIALS = {
+    os.getenv("admin_username"): os.getenv("admin_password"),
+    os.getenv("USER_youruser"): os.getenv("PASSWORD_youruser"),
+    ## Manully add as many user as you have
+    
+    }
+
+
 **3. Change the Size of playlist**
 
 Change the playlist size from `playlist.py`
