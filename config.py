@@ -7,6 +7,7 @@
 
 from dotenv import load_dotenv
 import os
+from urllib.parse import urlencode
 
 load_dotenv()
 
@@ -27,23 +28,26 @@ USER_CREDENTIALS = {
 
 #default url to pull data from api
 def build_url(endpoint):
-    return(
-        f"{Navidrome_url}/rest/{endpoint}"
-        f"?u={Navidrome_admin}"
-        f"&p={navidrome_password}"
-        f"&v={api_version}"
-        f"&c={app_name}"
-        f"&f=json"
-        
+    params = urlencode(
+        {
+            "u": Navidrome_admin,
+            "p": navidrome_password,
+            "v": api_version,
+            "c": app_name,
+            "f": "json",
+        }
     )
+    return f"{Navidrome_url.rstrip('/')}/rest/{endpoint}?{params}"
 
 #url to create playlist for every user
 def build_url_for_user(endpoint, username, password):
-    return (
-        f"{Navidrome_url}/rest/{endpoint}"
-        f"?u={username}"
-        f"&p={password}"
-        f"&v={api_version}"
-        f"&c={app_name}"
-        f"&f=json"
+    params = urlencode(
+        {
+            "u": username,
+            "p": password,
+            "v": api_version,
+            "c": app_name,
+            "f": "json",
+        }
     )
+    return f"{Navidrome_url.rstrip('/')}/rest/{endpoint}?{params}"

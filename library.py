@@ -12,8 +12,39 @@
 # fix : used genre aliases to make bollywood and bollywood music same
 
 import requests
+import time
 from config import build_url
 from db import init_db_lib, get_db_connection_lib
+
+
+def _response_preview(response, limit=240):
+    text = (response.text or "").strip().replace("\n", " ")
+    return text[:limit] + ("..." if len(text) > limit else "")
+
+
+def _get_json(url_value, retries=3):
+    last_error = None
+
+    for attempt in range(1, retries + 1):
+        try:
+            response = requests.get(url_value, timeout=20)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            last_error = RuntimeError(f"Failed to call Navidrome API: {exc}")
+        except requests.exceptions.JSONDecodeError as exc:
+            content_type = response.headers.get("Content-Type", "unknown")
+            preview = _response_preview(response)
+            last_error = RuntimeError(
+                "Navidrome API returned a non-JSON response while syncing library. "
+                f"status={response.status_code}, content_type={content_type}, "
+                f"url={response.url}, body_preview={preview!r}"
+            )
+
+        if attempt < retries:
+            time.sleep(1.5 * attempt)
+
+    raise last_error
 
 GENRE_ALIASES = {
     "bollywood music": "bollywood",
@@ -70,8 +101,7 @@ def fetch_all_song():
     batch = 100
 
     while True:
-        response = requests.get(url(batch, offset))
-        data = response.json()
+        data = _get_json(url(batch, offset))
 
         songs = data["subsonic-response"].get("searchResult3", {}).get("song", [])
 
