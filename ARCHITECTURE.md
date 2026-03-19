@@ -24,6 +24,12 @@ tunelog.db + songlist.db → playlist.py → Navidrome API (playlist push)
 
 ---
 
+### Library Sync Performance Note
+
+iTunes API enforces rate limits (~20 req/min). TuneLog uses a 1s delay between calls + exponential backoff on 429 errors (5s, 10s, 15s). A full 2383-song library takes approximately **30–40 minutes** on first sync. Subsequent syncs only process songs missing metadata and complete in seconds.
+
+To counter this, I have added A toggle for it in `library.py`
+
 ## The "Ghost Flush" Mechanism
 
 ### The Problem: API Reporting Latency
@@ -234,3 +240,4 @@ USER_CREDENTIALS = {
 - **Symfonium / third-party sync** — each playlist regeneration creates a new playlist ID in Navidrome. Apps that sync by ID (like Symfonium) require manual reimport each time.
 - **No genre metadata** — songs without embedded genre tags receive `"default"` and score 1 point in the unheard pool, giving them lower priority than tagged songs.
 - **Artist name variants** — `"Arijit Singh"` and `"Arjeet Singh"` are treated as different artists. No fuzzy matching implemented yet.
+- **iTunes metadata sync is slow** — `sync_library()` makes one iTunes API call per song with a 0.5–1s delay to avoid rate limiting. For a 2000+ song library, a full sync takes 20–40 minutes. Re-syncing after adding new songs is fast since only songs with `explicit IS NULL` are fetched, but initial sync is a one-time long operation.
