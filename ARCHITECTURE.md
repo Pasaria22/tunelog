@@ -1,15 +1,23 @@
 # TuneLog Architecture & Design Decisions
 
-This document outlines the technical challenges encountered during the development of TuneLog and the logic used to maintain data integrity.
+This document outlines the technical architecture, data flow, and design decisions made during TuneLog development.
+
+---
+
+## Data Flow
+```
+Navidrome API → library.py → songlist.db (library table)
+Navidrome API → main.py (Watcher) → tunelog.db (listens table)
+tunelog.db + songlist.db → playlist.py → Navidrome API (playlist push)
+```
 
 ---
 
 ## The "Ghost Flush" Mechanism
 
 ### The Problem: API Reporting Latency
-TuneLog interacts with the Navidrome (Subsonic) API to monitor real-time listening activity. However, the Subsonic API has a known limitation: it does not actively report a **"Paused"** state. 
-
-If a user pauses a track, the API continues to list that track as "Now Playing." If TuneLog simply calculated the difference between the `start_time` and the current `time.time()`, the "played duration" would continue to increase indefinitely reaching 100%, 200%, or even more while the song is actually paused.
+TuneLog interacts with the Navidrome (Subsonic) API to monitor real-time listening activity. However, the Subsonic API has a known limitation: it does not actively report a **"Paused"** state.
+If a user pauses a track, the API continues to list that track as "Now Playing." If TuneLog simply calculated the difference between the `start_time` and the current `time.time()`, the "played duration" would continue to increase indefinitely — reaching 100%, 200%, or even more while the song is actually paused.
 
 ### The Solution
 To prevent these "phantom listens" from polluting the SQLite database and skewing recommendation scores, the watcher implements a **Ghost Flush**.
@@ -21,14 +29,172 @@ for entry in entries:
     song_id = entry["id"]
     
     if user_id in active and active[user_id]["song_id"] == song_id:
-        # Calculate how long the song has been 'active' in our watcher
         elapsed = time.time() - active[user_id]["start_time"]
-
-        # If elapsed time exceeds the actual song duration, the user has paused
-        # or the API has failed to update the 'finished' status.
         if elapsed >= active[user_id]["duration"]:
-            active.pop(user_id) # Remove from memory without DB commit
+            active.pop(user_id)
             print(f"[DONE] {user_id} finished: {entry['title']}")
             continue
+```
 
+---
 
+## Signal System
+
+### The Problem: Binary Listen Data
+A simple "played/not played" model loses nuance. A song played for 5 seconds and a song played to completion are not equivalent events, but a naive system would treat them identically.
+
+### The Solution
+TuneLog classifies every listen into one of five signals based on `percent_played`:
+
+| Signal | Threshold | Weight |
+|---|---|---|
+| noise | `< 10%` | 0 (not logged) |
+| skip | `10–30%` | −2 |
+| partial | `30–80%` | +1 |
+| positive | `80–100%` | +2 |
+| repeat | replayed | +3 |
+
+### Scoring Formula
+```
+score = signal_weight × recency_multiplier
+recency_multiplier = 1 / (days_since + 1)
+final_score = average of all contributions for that song
+```
+Recent listens are weighted higher. A repeat yesterday outweighs a repeat from 3 months ago.
+
+---
+
+## Genre Normalisation Pipeline
+
+### The Problem: Inconsistent Metadata
+Navidrome stores genre tags exactly as embedded in audio files. This means the same genre can appear as `BOLLYWOOD`, `Bollywood Music`, `Hindi OST`, `Indian`, or `Фильмы` — all treated as separate genres, causing genre injection to miss matches entirely.
+
+Additionally, songs tagged with multiple genres like `Bollywood/Rap` were stored as one string, never matching either genre pool.
+
+### The Solution
+Every genre string passes through `normalise_genre()` at ingest time in both `library.py` and `main.py`:
+
+1. Lowercase + strip whitespace
+2. Split on `/` → handle multi-genre tags
+3. Map through `GENRE_ALIASES` dict → collapse variants to canonical names
+4. Unknown genres pass through as-is (never silently dropped)
+5. Store as comma-separated string e.g. `"bollywood,rap"`
+```python
+GENRE_ALIASES = {
+    "bollywood music": "bollywood",
+    "hindi": "bollywood",
+    "hindi ost": "bollywood",
+    "indian": "bollywood",
+    "bandes originales de films": "soundtrack",
+    "filme": "soundtrack",
+    "films": "soundtrack",
+    "ost": "soundtrack",
+    "hip hop": "rap",
+    "поп": "pop",
+    "hits": "pop",
+    "compilation": "pop",
+    "musiques du monde": "world",
+    "r&b": "rnb",
+    "quran recitation": "quran",
+    "bengali movie music": "bengali",
+    "фильмы": "soundtrack",
+}
+```
+
+Songs with no genre metadata are assigned `"default"`.
+
+---
+
+## Genre Injection
+
+### The Problem: Cold Unheard Pool
+A 2000+ song library means the unheard slot would randomly surface songs with no relation to the user's taste — wasting playlist slots on irrelevant tracks.
+
+### The Solution
+Instead of random sampling, the unheard slot is filled via **genre injection**:
+
+1. `get_genre_distribution()` — counts listen history per genre, splitting comma-separated genres so `"bollywood,rap"` increments both `bollywood` and `rap` counters
+2. `get_unheard_by_genre_weighted()` — allocates unheard slots proportionally to genre listen counts
+3. `get_unheard_by_genre()` — `LIKE %genre%` match against library, shuffled before slicing to prevent alphabetical bias
+4. Fallback to random unheard sample if genre pool doesn't fill the slot
+
+### Genre Point System
+Songs are ranked within the unheard pool by points:
+
+| Genre state | Points |
+|---|---|
+| `"default"` (no metadata) | 1 |
+| single genre | 2 |
+| `"bollywood,rap"` (2 tags) | 4 |
+| matched in multiple pools | stacks |
+
+---
+
+## Playlist Slot System
+
+### The Problem: Fixed Slot Truncation
+Using `int()` to calculate slot sizes caused slots to truncate to 0 at small playlist sizes — `n=10` produced only 6 songs because `int(10 * 0.08) = 0` silently dropped the wildcard slot entirely.
+
+### The Solution
+Replace `int()` with `max(1, round(...))` to guarantee every slot gets at least 1 song, with a trim loop to bring the total back to `n` when `max(1,...)` causes overflow:
+```python
+slots = {
+    "unheard":  max(1, round(n * unheard_pct)),
+    "wildcard": max(1, round(n * wildcard_pct)),
+    "positive": max(1, round(n * remaining * 0.35)),
+    "repeat":   max(1, round(n * remaining * 0.35)),
+    "partial":  max(1, round(n * remaining * 0.20)),
+    "skip":     max(1, round(n * remaining * 0.10)),
+}
+
+# trim overflow, least important first
+for key in ["skip", "wildcard", "partial", "positive", "repeat", "unheard"]:
+    if total <= n:
+        break
+    if slots[key] > 1:
+        diff = min(slots[key] - 1, total - n)
+        slots[key] -= diff
+        total -= diff
+```
+
+### Default Slot Distribution (n=50)
+
+| Slot | % | Source |
+|---|---|---|
+| unheard | up to 35% | genre-injected unheard songs |
+| wildcard | 8% | songs not played in 60+ days with positive score |
+| positive | 35% of remaining | songs with positive signal |
+| repeat | 35% of remaining | songs with repeat signal |
+| partial | 20% of remaining | songs with partial signal |
+| skip | 10% of remaining | songs with skip signal |
+
+---
+
+## Timezone Safety
+
+### The Problem
+Navidrome stores timestamps in UTC. Python's `datetime.now()` returns local time. In timezones behind UTC, the difference becomes negative — causing a divide-by-zero in `1 / (days_since + 1)` when `days_since = -1`.
+
+### The Solution
+```python
+days_since = max((datetime.now() - datetime.fromisoformat(timestamp)).days, 0)
+```
+`max(..., 0)` clamps negative values to 0, treating same-day listens as recency = 1.
+
+---
+
+## Multi-user Support
+
+- Each user has separate credentials in `config.py`
+- All DB queries filtered by `user_id`
+- Separate playlist pushed per user named `Tunelog - {user_id}`
+- Playlist set to private after creation
+
+---
+
+## Known Limitations
+
+- **Cold start** — recommendations improve only after sufficient listen history builds up. Initial playlists are genre-injected unheard songs with little signal weighting.
+- **Symfonium / third-party sync** — each playlist regeneration creates a new playlist ID in Navidrome. Apps that sync by ID (like Symfonium) require manual reimport each time.
+- **No genre metadata** — songs without embedded genre tags receive `"default"` and score 1 point in the unheard pool, giving them lower priority than tagged songs.
+- **Artist name variants** — `"Arijit Singh"` and `"Arjeet Singh"` are treated as different artists. No fuzzy matching implemented yet.
