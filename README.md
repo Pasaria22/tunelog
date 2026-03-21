@@ -60,6 +60,16 @@ TuneLog/
 └── Dockerfile
 ```
 
+
+## Multi User
+- Now Users can be added from web ui, go to Users from web ui
+- For now it only create users in Navidrome
+- TODO: Integrate this in playlist generation
+
+- For playlist for multiple user, you have to manually do it, instruction are further down in readme
+
+
+
 ## Requirements
 - Python 3.10+
 - Navidrome instance (local or remote)
