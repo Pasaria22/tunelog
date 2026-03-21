@@ -1,6 +1,8 @@
 # TuneLog
 A lightweight, self-hosted music recommendation system that learns your taste from how you actually listen — no ratings, no manual input.
 
+# Frontend is not able to talk to backend if deployed via docker, possible cause is .env , maybe in fronted api.ts it is not able to access .env or docker is  not working becuase of /localhost or /backend, 
+
 # 🤖 AI Usage
 
 This project was built by me, with AI assistance in specific areas:
