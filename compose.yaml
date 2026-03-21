@@ -1,9 +1,22 @@
 services:
-  tunelog:
+  backend:
     build:
-      context: .
-    container_name: tunelog
+      context: ./backend
+    container_name: tunelog-backend
     volumes:
       - ./data:/app/Data
     env_file:
       - .env
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: tunelog-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://backend:8000
+    depends_on:
+      - backend

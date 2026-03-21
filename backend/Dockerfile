@@ -5,11 +5,8 @@ RUN apk add --no-cache \
     libffi-dev
 
 WORKDIR /app
-
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir --target=/app/deps -r requirements.txt
-
 
 FROM python:3.14.3-alpine
 
@@ -18,8 +15,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app/deps
 
 WORKDIR /app
-
 COPY --from=builder /app/deps /app/deps
 COPY . .
 
-CMD ["python", "main.py"]
+CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
