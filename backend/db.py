@@ -11,6 +11,11 @@ DB_PATH_LOG = os.path.join(os.path.dirname(__file__), "Data", "tunelog.db")
 # db for song list
 DB_PATH_LIB = os.path.join(os.path.dirname(__file__), "Data", "songlist.db")
 
+
+# DB for USER / admin
+
+DB_PATH_USR = os.path.join(os.path.dirname(__file__), "Data", "users.db")
+
 # Database connection
 
 def get_db_connection():
@@ -25,6 +30,33 @@ def get_db_connection_lib():
     conn = sqlite3.connect(DB_PATH_LIB)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+# for library sync
+def get_db_connection_usr():
+    os.makedirs(os.path.dirname(DB_PATH_USR), exist_ok=True)
+    conn = sqlite3.connect(DB_PATH_USR)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db_usr():
+    conn = get_db_connection_usr()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user (
+            username     TEXT PRIMARY KEY,
+            password       TEXT,
+            isAdmin     BOOLEAN
+            
+        )
+    """
+    )
+
+    conn.commit()
+    conn.close()
 
 
 def init_db():
@@ -82,3 +114,5 @@ def init_db_lib():
 if __name__ == "__main__":
     init_db()
     init_db_lib()
+    print("asdasd")
+    init_db_usr()
