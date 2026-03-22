@@ -129,13 +129,20 @@ pip install -r requirements.txt
 ```
 **4. Configure `.env`**
 ```env
-base_url=http://localhost:4533
-admin_username=your_admin_username
-admin_password=your_admin_password
+BASE_URL=http://your-navidrome-ip:4533
+ADMIN_USERNAME=your_admin_username
+ADMIN_PASSWORD=your_admin_password
 
-# per-user credentials for personalised playlists
-USER_youruser=youruser
-PASSWORD_youruser=yourpassword
+# Per-user credentials
+USER_username1=username1
+PASSWORD_username1=yourpassword
+
+USER_username2=username2
+PASSWORD_username2=yourpassword
+
+# API
+VITE_API_URL=http://localhost:8000
+# VITE_API_URL=http://backend:8000  ← use this when running via Docker
 ```
 
 For multiple users add the following in `config.py`:
