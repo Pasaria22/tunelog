@@ -9,8 +9,6 @@ services:
       - .env
     ports:
       - "8000:8000"
-    networks:
-      - bridge
 
   frontend:
     build:
@@ -22,10 +20,3 @@ services:
       - .env
     depends_on:
       - backend
-    networks:
-      - bridge
-
-networks:
-  bridge:
-    external: true
-    name: bridge
