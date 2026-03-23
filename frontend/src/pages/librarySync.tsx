@@ -1,6 +1,3 @@
-
-
-
 import { useState, useEffect, useRef } from "react";
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import PageMeta from "../components/common/PageMeta";
@@ -29,19 +26,18 @@ export default function LibrarySync() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const syncStartedRef = useRef(false);
 
+  const navigate = useNavigate();
 
-const navigate = useNavigate();
+  useEffect(() => {
+    const token =
+      localStorage.getItem("tunelog_token") ||
+      sessionStorage.getItem("tunelog_token");
 
-useEffect(() => {
-  const token =
-    localStorage.getItem("tunelog_token") ||
-    sessionStorage.getItem("tunelog_token");
-
-  if (!token) {
-    navigate("/signin");
-    return;
-  }
-}, []);
+    if (!token) {
+      navigate("/signin");
+      return;
+    }
+  }, []);
 
   const calcExpectedTime = () => {
     if (!syncData) return "—";

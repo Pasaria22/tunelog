@@ -1,5 +1,3 @@
-
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
@@ -24,15 +22,15 @@ export default function SignInForm() {
     try {
       const res = await fetchLogin({ username, password });
       if (res.status === "success" && res.JWT) {
-       if (isChecked) {
-         localStorage.setItem("tunelog_token", res.JWT);
-         localStorage.setItem("tunelog_user", username);
-         localStorage.setItem("tunelog_password", password);
-       } else {
-         sessionStorage.setItem("tunelog_token", res.JWT);
-         sessionStorage.setItem("tunelog_user", username);
-         sessionStorage.setItem("tunelog_password", password);
-       }
+        if (isChecked) {
+          localStorage.setItem("tunelog_token", res.JWT);
+          localStorage.setItem("tunelog_user", username);
+          localStorage.setItem("tunelog_password", password);
+        } else {
+          sessionStorage.setItem("tunelog_token", res.JWT);
+          sessionStorage.setItem("tunelog_user", username);
+          sessionStorage.setItem("tunelog_password", password);
+        }
         navigate("/");
       } else {
         setError(res.reason ?? "Invalid username or password");

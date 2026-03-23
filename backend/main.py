@@ -44,8 +44,9 @@ import requests
 import threading
 import time
 from datetime import datetime
+
 # from queue import Queue
-from config import build_url , event_queue
+from config import build_url, event_queue
 from db import get_db_connection, init_db, init_db_lib, init_db_usr, init_db_playlist
 import library
 from playlist import main as generate_playlist
@@ -53,12 +54,14 @@ from library import normalise_genre
 from watcher import start_sse
 from misc import push_star
 import uvicorn
+
 # store user data
 active = {}
 
 
 # queue
 # event_queue = Queue()
+
 
 # url
 def navidrome_url(endpoint):
@@ -179,7 +182,7 @@ def log_history(song):
 
     # pushing star ratings
 
-    push_star(song["song_id"] , song["user_id"] , signal)
+    push_star(song["song_id"], song["user_id"], signal)
     # print("signal : ", signal)
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -246,8 +249,6 @@ if __name__ == "__main__":
     init_db_usr()
     init_db_playlist()
 
-
-
     library.sync_library()
 
     # generate playlist
@@ -285,9 +286,9 @@ if __name__ == "__main__":
         auto_sync_hour = settings["auto_sync"]
 
         if (
-            current_hour == auto_sync_hour  
-            and current_day != last_auto_sync_day  
-            and not library._isSyncing  
+            current_hour == auto_sync_hour
+            and current_day != last_auto_sync_day
+            and not library._isSyncing
         ):
             print(f"[TuneLog] Auto sync triggered at {now.strftime('%H:%M')}...")
             last_auto_sync_day = current_day

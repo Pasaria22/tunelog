@@ -22,15 +22,8 @@
 # Implementing star system to grade and push it in navidrome
 
 
-#implementation : explict song filter
+# implementation : explict song filter
 # input from frontend, if they want explict or cleaned or all
-
-
-
-
-
-
-
 
 
 # - songs with a genre tag gets priorities
@@ -54,7 +47,12 @@
 from datetime import datetime
 import requests
 import random
-from db import get_db_connection, get_db_connection_lib, get_db_connection_usr , get_db_connection_playlist
+from db import (
+    get_db_connection,
+    get_db_connection_lib,
+    get_db_connection_usr,
+    get_db_connection_playlist,
+)
 from config import build_url, build_url_for_user, getAllUser
 
 PLAYLIST_NAME = "Tunelog - {}"  # {} filled with user_id
@@ -131,7 +129,7 @@ def get_unheard_by_genre(heard_ids, genre, limit):
     conn.close()
 
     results = [(r[0], r[1]) for r in rows]
-    random.shuffle(results)  
+    random.shuffle(results)
     return results[:limit]
 
 
@@ -224,7 +222,14 @@ def get_allowed_song_ids(explicit_filter: str) -> set:
 
 
 def build_playlist(
-    scores, unheard, wildcards, unheard_ratio, user_id, explicit_filter="allow_cleaned"  , n = PLAYLIST_SIZE):
+    scores,
+    unheard,
+    wildcards,
+    unheard_ratio,
+    user_id,
+    explicit_filter="allow_cleaned",
+    n=PLAYLIST_SIZE,
+):
     # n = PLAYLIST_SIZE
     playlist_ids = []
     seen_ids = set()
@@ -388,6 +393,7 @@ def push_playlist(song_ids, user_id, song_signals):
 
 ## for user mismatch, two condition user database has less user then lib, it will flag and tell user to add that user via web ui
 # if user database has higher them it will tell which user has not listened to musci
+
 
 def get_all_users():
     listens_conn = get_db_connection()

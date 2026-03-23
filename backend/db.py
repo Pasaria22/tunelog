@@ -19,12 +19,13 @@ DB_PATH_PLTS = os.path.join(DATA_DIR, "playlist.db")
 
 # db connection
 
+
 # for song listen history
 def get_db_connection():
     os.makedirs(os.path.dirname(DB_PATH_LOG), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH_LOG, timeout=30)  
+    conn = sqlite3.connect(DB_PATH_LOG, timeout=30)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")  
+    conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
 
@@ -39,7 +40,7 @@ def get_db_connection_lib():
 # for users
 def get_db_connection_usr():
     os.makedirs(os.path.dirname(DB_PATH_USR), exist_ok=True)
-    conn = sqlite3.connect(DB_PATH_USR, timeout=30)  
+    conn = sqlite3.connect(DB_PATH_USR, timeout=30)
     conn.row_factory = sqlite3.Row
     return conn
 

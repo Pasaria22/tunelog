@@ -8,7 +8,12 @@ from pydantic import BaseModel
 import requests
 from config import Navidrome_url
 
-from db import get_db_connection_lib , get_db_connection, get_db_connection_usr , get_db_connection_playlist
+from db import (
+    get_db_connection_lib,
+    get_db_connection,
+    get_db_connection_usr,
+    get_db_connection_playlist,
+)
 from db import init_db, init_db_lib, init_db_usr
 
 from playlist import (
@@ -32,8 +37,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-    
-    
     ],
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,7 +57,7 @@ class CreateUserData(BaseModel):
     admin: str
     adminPD: str
     email: str
-    name : str
+    name: str
 
 
 class LoginData(BaseModel):
@@ -69,29 +72,27 @@ class AdminAuth(BaseModel):
 
 # ping
 
+
 @app.get("/api/ping")
 def ping():
-    return {"status" : "OK"}
+    return {"status": "OK"}
 
 
 # send statics
+
 
 @app.get("/api/stats")
 def stats():
 
     # connection to db
     conn_lib = get_db_connection_lib()
-    conn_log = get_db_connection()    #tunelog.db
+    conn_log = get_db_connection()  # tunelog.db
 
     # no of songs in library
 
-    countSongsLib = conn_lib.execute(
-        "SELECT COUNT(*) FROM library"
-    ).fetchone()[0]
+    countSongsLib = conn_lib.execute("SELECT COUNT(*) FROM library").fetchone()[0]
 
-    countPlayedSongs = conn_log.execute(
-        "SELECT COUNT(*) FROM listens"
-        ).fetchone()[0]
+    countPlayedSongs = conn_log.execute("SELECT COUNT(*) FROM listens").fetchone()[0]
 
     signal_rows = conn_log.execute(
         "SELECT signal, COUNT(*) as count FROM listens GROUP BY signal"
@@ -103,10 +104,10 @@ def stats():
         "SELECT artist, COUNT(*) as count FROM listens GROUP BY artist ORDER BY count DESC LIMIT 10"
     ).fetchall()
 
-    mostPlayedArtists = {row[0] : row[1] for row in mostPlayedArtists_row}
+    mostPlayedArtists = {row[0]: row[1] for row in mostPlayedArtists_row}
 
     mostPlayedSongs_row = conn_log.execute(
-    """
+        """
     SELECT title, artist, COUNT(*) as play_count 
     FROM listens 
     GROUP BY title
@@ -116,13 +117,9 @@ def stats():
     ).fetchall()
 
     mostPlayedSongs = [
-    {
-        "title": row[0],
-        "artist": row[1],
-        "play_count": row[2]
-    } 
-    for row in mostPlayedSongs_row
-    ]    
+        {"title": row[0], "artist": row[1], "play_count": row[2]}
+        for row in mostPlayedSongs_row
+    ]
 
     conn_lib.close()
     conn_log.close()
@@ -160,8 +157,8 @@ def login(data: LoginData):
     admin = data.username
     password = data.password
     res = getJWT(admin, password)
-    conn = get_db_connection_usr()  
-    cursor = conn.cursor() 
+    conn = get_db_connection_usr()
+    cursor = conn.cursor()
 
     if res:
         existing = cursor.execute(
@@ -177,10 +174,10 @@ def login(data: LoginData):
             )
             conn.commit()
 
-        conn.close()  
+        conn.close()
         return {"status": "success", "JWT": res}
 
-    conn.close()  
+    conn.close()
     return {"status": "failed", "reason": "Invalid username or password"}
 
 
@@ -270,6 +267,7 @@ def getUsers(data: AdminAuth):
     conn.close()
 
     return {"status": "ok", "users": [dict(row) for row in users]}
+
 
 # http://your-server/rest/ping.view?u=joe&t=26719a1196d2a940705a59634eb18eab&s=c19b2d&v=1.12.0&c=myapp
 
@@ -376,7 +374,7 @@ def getSongsFromPlaylist(username: str):
             genre_counts[genre] = genre_counts.get(genre, 0) + 1
 
     top_genre = max(genre_counts, key=genre_counts.get) if genre_counts else None
-    last_generated = rows[0][6] 
+    last_generated = rows[0][6]
 
     stats = {
         "last_generated": last_generated,
@@ -408,7 +406,7 @@ def generatePlaylist(
         unheard, unheard_ratio = get_unheard_songs(scores)
         wildcards = get_wildcard_songs(scores, username)
         playlist, song_signals = build_playlist(
-            scores, unheard, wildcards, unheard_ratio, username, explicit_filter , size
+            scores, unheard, wildcards, unheard_ratio, username, explicit_filter, size
         )
         push_playlist(playlist, username, song_signals)
 

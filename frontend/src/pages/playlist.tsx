@@ -12,12 +12,9 @@ import {
 } from "../API/API";
 import { useNavigate } from "react-router";
 
-
-
 type ExplicitFilter = "strict" | "allow_cleaned" | "all";
 type SortKey = "artist" | "genre" | "signal";
 type SyncMode = "regenerate" | "append";
-
 
 const SIGNAL_STYLE: Record<string, string> = {
   repeat:
@@ -58,7 +55,6 @@ const formatLastGenerated = (raw: string | null) => {
 };
 
 export default function Playlist() {
-
   const [users, setUsers] = useState<string[]>([]);
   const [selectedUser, setSelectedUser] = useState("");
   const [playlistSize, setPlaylistSize] = useState(40);
@@ -78,8 +74,7 @@ export default function Playlist() {
   const [showCleaned, setShowCleaned] = useState(true);
   const [showClean, setShowClean] = useState(true);
 
-  
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token =
