@@ -29,6 +29,7 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 Navidrome_url = os.getenv("base_url")
 Navidrome_admin = os.getenv("admin_username")
 navidrome_password = os.getenv("admin_password")
+music_folder_id = os.getenv("music_folder_id")  # optional — filter sync to a specific Navidrome library
 api_version = "1.16.1"
 app_name = "tunelog"
 

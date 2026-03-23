@@ -14,7 +14,7 @@
 import requests
 import time
 from config import build_url
-from config import build_url , _extract , itunesApi
+from config import build_url , _extract , itunesApi , music_folder_id
 from db import init_db_lib, get_db_connection_lib
 from time import sleep
 
@@ -147,9 +147,9 @@ def normalise_genre(raw):
 
 
 def url(batch, offset):
-    url = build_url("search3")
-    song_url = url + f"&query=&songCount={batch}&songOffset={offset}"
-    # print(song_url)
+    song_url = build_url("search3") + f"&query=&songCount={batch}&songOffset={offset}"
+    if music_folder_id:
+        song_url += f"&musicFolderId={music_folder_id}"
     return song_url
 
 
@@ -213,6 +213,11 @@ def sync_library():
 
     songs = fetch_all_song()
     total = len(songs)
+
+    if not songs:
+        print("[SYNC] WARNING: No songs returned from Navidrome — aborting sync to prevent accidental library wipe.")
+        _isSyncing = False
+        return
 
     conn = get_db_connection_lib()
     cursor = conn.cursor()

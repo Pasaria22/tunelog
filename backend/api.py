@@ -6,7 +6,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
-from config import Navidrome_url
+from config import Navidrome_url, build_url, music_folder_id
 
 from db import (
     get_db_connection_lib,
@@ -358,6 +358,21 @@ def syncStatus():
             "notInItunes": not_in_itunes,
             "pending": songs_needing_itunes,
         },
+    }
+
+
+@app.get("/api/music-folders")
+def getMusicFolders():
+    r = requests.get(build_url("getMusicFolders")).json()
+    raw = r["subsonic-response"]["musicFolders"].get("musicFolder", [])
+    # Navidrome returns a dict (not list) when there's only one folder
+    if isinstance(raw, dict):
+        raw = [raw]
+    folders = [{"id": f["id"], "name": f["name"]} for f in raw]
+    return {
+        "status": "ok",
+        "folders": folders,
+        "active_folder_id": music_folder_id,
     }
 
 

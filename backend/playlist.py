@@ -353,6 +353,11 @@ def push_playlist(song_ids, user_id, song_signals):
     r = requests.post(url, data=data).json()
 
     new_id = existing_id or r["subsonic-response"]["playlist"]["id"]
+
+    actual_count = r["subsonic-response"]["playlist"].get("songCount", len(song_ids))
+    if actual_count != len(song_ids):
+        stale = len(song_ids) - actual_count
+        print(f"[WARNING] Sent {len(song_ids)} songs but Navidrome accepted {actual_count} ({stale} rejected). Some IDs may be stale — consider running a library sync.")
     requests.get(
         build_url_for_user("updatePlaylist", user_id, password)
         + f"&playlistId={new_id}&public=false"
