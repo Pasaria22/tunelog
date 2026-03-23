@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
 from config import Navidrome_url, build_url, music_folder_id
+import os
 
 from db import (
     get_db_connection_lib,
@@ -33,11 +34,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+cors_origin = os.getenv("CORS_ORIGIN", "http://localhost:5173")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-    ],
+    allow_origins=[cors_origin],
     allow_methods=["*"],
     allow_headers=["*"],
 )
