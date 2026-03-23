@@ -4,7 +4,7 @@ services:
       context: ./backend
     container_name: tunelog-backend
     volumes:
-      - ./data:/app/data
+      - /mnt/user/appdata/tunelog:/app/data
     env_file:
       - .env
     ports:
