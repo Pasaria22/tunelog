@@ -56,7 +56,7 @@ from db import (
 from config import build_url, build_url_for_user, getAllUser
 
 PLAYLIST_NAME = "Tunelog - {}"  # {} filled with user_id
-PLAYLIST_SIZE = 40
+PLAYLIST_SIZE = 50
 WILDCARD_DAY = 60
 
 SIGNAL_WEIGHTS = {
@@ -337,19 +337,22 @@ def push_playlist(song_ids, user_id, song_signals):
     r = requests.get(build_url_for_user("getPlaylists", user_id, password)).json()
     playlists = r["subsonic-response"]["playlists"].get("playlist", [])
 
+    existing_id = None
     for pl in playlists:
         if pl["name"] == name:
-            requests.get(
-                build_url_for_user("deletePlaylist", user_id, password)
-                + f"&id={pl['id']}"
-            )
+            existing_id = pl["id"]
             break
 
-    url = build_url_for_user("createPlaylist", user_id, password) + f"&name={name}"
+    if existing_id:
+        # Reuse the same playlist ID so Symfonium doesn't lose the reference
+        url = build_url_for_user("createPlaylist", user_id, password) + f"&playlistId={existing_id}"
+    else:
+        url = build_url_for_user("createPlaylist", user_id, password) + f"&name={name}"
+
     data = [("songId", sid) for sid in song_ids]
     r = requests.post(url, data=data).json()
 
-    new_id = r["subsonic-response"]["playlist"]["id"]
+    new_id = existing_id or r["subsonic-response"]["playlist"]["id"]
     requests.get(
         build_url_for_user("updatePlaylist", user_id, password)
         + f"&playlistId={new_id}&public=false"

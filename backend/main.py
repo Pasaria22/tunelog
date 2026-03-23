@@ -270,6 +270,7 @@ if __name__ == "__main__":
 
     n = 0
     last_auto_sync_day = None  # track last day auto sync ran
+    last_playlist_gen_day = datetime.now().date()  # startup counts as first generation
 
     while True:
         # --- SYNC NOW check ---
@@ -294,6 +295,17 @@ if __name__ == "__main__":
             last_auto_sync_day = current_day
             syncThread = threading.Thread(target=library.sync_library, daemon=True)
             syncThread.start()
+
+        # --- AUTO PLAYLIST REGENERATION (every 14 days at auto_sync_hour) ---
+        days_since_playlist = (current_day - last_playlist_gen_day).days
+        if (
+            days_since_playlist >= 14
+            and current_hour == auto_sync_hour
+        ):
+            print(f"[TuneLog] Auto playlist regeneration triggered ({days_since_playlist} days since last)...")
+            last_playlist_gen_day = current_day
+            playlistThread = threading.Thread(target=generate_playlist, daemon=True)
+            playlistThread.start()
 
         # --- WATCHER event ---
         try:
