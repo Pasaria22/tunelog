@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>TuneLog-Frontend</Name>
+  <Repository>passy22/tunelog-frontend</Repository>
+  <Registry>https://hub.docker.com/r/passy22/tunelog-frontend</Registry>
+  <Network>bridge</Network>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Overview>TuneLog web dashboard — view listening stats, manage users, control library sync and trigger playlist generation. Requires TuneLog-Backend to be running.</Overview>
+  <Category>MediaServer:Music</Category>
+  <WebUI>http://[IP]:[PORT:5173]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/Pasaria22/tunelog/main/unraid-templates/tunelog-frontend.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/Pasaria22/tunelog/main/Screenshots/playlist_1.png</Icon>
+  <Date>2026-03-24</Date>
+  <Changes></Changes>
+
+  <Config Name="Frontend Port" Target="5173" Default="5173" Mode="tcp"
+    Description="Port for the TuneLog web dashboard."
+    Type="Port" Display="always" Required="true" Mask="false">5173</Config>
+
+  <Config Name="Backend URL" Target="VITE_API_URL" Default=""
+    Description="URL of the TuneLog backend. Use your Unraid IP. Example: http://192.168.1.80:8000"
+    Type="Variable" Display="always" Required="true" Mask="false"></Config>
+</Container>
