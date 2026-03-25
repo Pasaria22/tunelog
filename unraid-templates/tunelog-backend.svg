@@ -1,0 +1,46 @@
+<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .bg-dark { fill: #1a1a2e; }
+    .record { fill: #111120; }
+    .groove { fill: none; stroke: #2a2a45; stroke-width: 1.2; }
+    .label-circle { fill: #222240; }
+    .wave { fill: none; stroke: #4f8ef7; stroke-width: 2.5; stroke-linecap: round; }
+    .wave-glow { fill: none; stroke: #4f8ef7; stroke-width: 6; stroke-linecap: round; opacity: 0.15; }
+    .center-dot { fill: #4f8ef7; }
+    .name { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 32px; font-weight: 300; fill: #111111; letter-spacing: 5px; }
+    .name-accent { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 32px; font-weight: 700; fill: #4f8ef7; letter-spacing: 5px; }
+    .badge { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 2px; }
+  </style>
+
+  <!-- Rounded square background -->
+  <rect x="0" y="0" width="400" height="400" rx="72" class="bg-dark"/>
+
+  <!-- Record -->
+  <circle cx="200" cy="182" r="128" class="record"/>
+  <!-- Grooves -->
+  <circle cx="200" cy="182" r="118" class="groove"/>
+  <circle cx="200" cy="182" r="104" class="groove"/>
+  <circle cx="200" cy="182" r="90" class="groove"/>
+  <circle cx="200" cy="182" r="76" class="groove"/>
+  <circle cx="200" cy="182" r="62" class="groove"/>
+  <!-- Center label -->
+  <circle cx="200" cy="182" r="46" class="label-circle"/>
+  <!-- Waveform glow -->
+  <polyline class="wave-glow" points="168,182 175,168 182,196 189,164 196,200 203,176 210,190 217,164 224,196 231,172 238,182"/>
+  <!-- Waveform -->
+  <polyline class="wave" points="168,182 175,168 182,196 189,164 196,200 203,176 210,190 217,164 224,196 231,172 238,182"/>
+  <!-- Center hole -->
+  <circle cx="200" cy="182" r="6" class="center-dot"/>
+
+  <!-- Shine -->
+  <ellipse cx="128" cy="102" rx="22" ry="11" fill="white" opacity="0.04" transform="rotate(-30 128 102)"/>
+
+  <!-- Badge -->
+  <rect x="128" y="328" width="144" height="28" rx="14" fill="#4f8ef7"/>
+  <text x="200" y="347" text-anchor="middle" class="badge" fill="#ffffff">BACKEND</text>
+
+  <!-- Name -->
+  <text x="200" y="392" text-anchor="middle">
+    <tspan class="name">Tune</tspan><tspan class="name-accent">Log</tspan>
+  </text>
+</svg>
