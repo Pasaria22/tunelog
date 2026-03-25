@@ -10,7 +10,7 @@
   <Category>MediaServer:Music</Category>
   <WebUI>http://[IP]:[PORT:5173]</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/Pasaria22/tunelog/main/unraid-templates/tunelog-frontend.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/Pasaria22/tunelog/main/unraid-templates/tunelog-frontend.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/Pasaria22/tunelog/main/unraid-templates/tunelog-frontend.png</Icon>
   <Date>2026-03-24</Date>
   <Changes></Changes>
 

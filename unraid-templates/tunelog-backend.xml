@@ -10,7 +10,7 @@
   <Category>MediaServer:Music</Category>
   <WebUI>http://[IP]:[PORT:8000]/api/ping</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/Pasaria22/tunelog/main/unraid-templates/tunelog-backend.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/Pasaria22/tunelog/main/unraid-templates/tunelog-backend.svg</Icon>
+  <Icon>https://raw.githubusercontent.com/Pasaria22/tunelog/main/unraid-templates/tunelog-backend.png</Icon>
   <Date>2026-03-24</Date>
   <Changes></Changes>
 
