@@ -436,9 +436,10 @@ def getSongsFromPlaylist(username: str):
 
 @app.get("/api/playlist/generate")
 def generatePlaylist(
-    username: str, explicit_filter: str = "allow_cleaned", size: int = 50
+    username: str, explicit_filter: str = "all", size: int = 50
 ):
     try:
+        library.cleanup_stale_songs()
         scores = score_song(username)
         unheard, unheard_ratio = get_unheard_songs(scores)
         wildcards = get_wildcard_songs(scores, username)

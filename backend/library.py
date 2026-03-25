@@ -204,6 +204,16 @@ def remove_deleted_songs(navidrome_ids: set):
     print(f"[CLEANUP] Done — removed {len(deleted_ids)} songs")
 
 
+def cleanup_stale_songs():
+    print("[CLEANUP] Fetching current Navidrome IDs to detect stale songs...")
+    songs = fetch_all_song()
+    if not songs:
+        print("[CLEANUP] Skipping — no songs returned from Navidrome")
+        return
+    navidrome_ids = {song["id"] for song in songs}
+    remove_deleted_songs(navidrome_ids)
+
+
 def sync_library():
     global _isSyncing, _progress, _startSyncSong
 

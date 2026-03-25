@@ -54,6 +54,7 @@ from db import (
     get_db_connection_playlist,
 )
 from config import build_url, build_url_for_user, getAllUser
+import library
 
 PLAYLIST_NAME = "Tunelog - {}"  # {} filled with user_id
 PLAYLIST_SIZE = 50
@@ -227,7 +228,7 @@ def build_playlist(
     wildcards,
     unheard_ratio,
     user_id,
-    explicit_filter="allow_cleaned",
+    explicit_filter="all",
     n=PLAYLIST_SIZE,
 ):
     # n = PLAYLIST_SIZE
@@ -438,6 +439,7 @@ def get_all_users():
 
 
 def main():
+    library.cleanup_stale_songs()
     users = get_all_users()
 
     for user_id in users:
@@ -451,7 +453,7 @@ def main():
             wildcards,
             unheard_ratio,
             user_id,
-            explicit_filter="allow_cleaned",
+            explicit_filter="all",
         )
         push_playlist(playlist, user_id, song_signals)
 
